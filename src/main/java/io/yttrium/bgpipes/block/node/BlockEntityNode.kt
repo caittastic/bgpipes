@@ -12,10 +12,52 @@ package io.yttrium.bgpipes.block.node
 
 import io.yttrium.bgpipes.BGPipes
 import net.minecraft.core.BlockPos
+import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
+import net.minecraftforge.items.IItemHandler
 
 class BlockEntityNode(pPos: BlockPos, pBlockState: BlockState) : BlockEntity(
     BGPipes.BlockEntities[BGPipes.BlockEntityTypes.Node]!!.get(), pPos,
     pBlockState
-)
+), IItemHandler {
+    private val items = Array<ItemStack>(slots) { _ -> ItemStack.EMPTY }
+
+    override fun getSlots(): Int {
+        return 9
+    }
+
+    override fun getStackInSlot(slot: Int): ItemStack {
+        return items[slot]
+    }
+
+    override fun insertItem(slot: Int, stack: ItemStack, simulate: Boolean): ItemStack {
+        return if (!isItemValid(slot, stack)) {
+            stack
+        } else {
+            if (!simulate) {
+                items[slot].count = items[slot].count.plus(stack.count).coerceAtMost(items[slot].maxStackSize)
+            }
+            ItemStack(items[slot].item, items[slot].maxStackSize - stack.count)
+        }
+    }
+
+    override fun extractItem(slot: Int, amount: Int, simulate: Boolean): ItemStack {
+        return if (items[slot].isEmpty) {
+            ItemStack.EMPTY
+        } else {
+            if (!simulate) {
+                items[slot].count = items[slot].count.minus(amount).coerceAtLeast(0)
+            }
+            ItemStack(items[slot].item, items[slot].count.minus(amount).coerceAtLeast(0))
+        }
+    }
+
+    override fun getSlotLimit(slot: Int): Int {
+        return items[slot].maxStackSize
+    }
+
+    override fun isItemValid(slot: Int, stack: ItemStack): Boolean {
+        return stack.`is`(items[slot].item)
+    }
+}
