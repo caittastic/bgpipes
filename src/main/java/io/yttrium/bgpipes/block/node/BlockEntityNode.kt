@@ -11,16 +11,20 @@
 package io.yttrium.bgpipes.block.node
 
 import io.yttrium.bgpipes.BGPipes
+import io.yttrium.bgpipes.util.ItemTransferDirection
 import net.minecraft.core.BlockPos
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraftforge.items.IItemHandler
 
-class BlockEntityNode(pPos: BlockPos, pBlockState: BlockState) : BlockEntity(
-    BGPipes.BlockEntities[BGPipes.BlockEntityTypes.Node]!!.get(), pPos,
-    pBlockState
+class BlockEntityNode(pos: BlockPos, blockState: BlockState,
+                      var direction: ItemTransferDirection = ItemTransferDirection.Pull
+) : BlockEntity(
+    BGPipes.BlockEntities[BGPipes.BlockEntityTypes.Node]!!.get(), pos,
+    blockState
 ), IItemHandler {
+
     private val items = Array<ItemStack>(slots) { _ -> ItemStack.EMPTY }
 
     override fun getSlots(): Int {
@@ -32,7 +36,7 @@ class BlockEntityNode(pPos: BlockPos, pBlockState: BlockState) : BlockEntity(
     }
 
     override fun insertItem(slot: Int, stack: ItemStack, simulate: Boolean): ItemStack {
-        return if (!isItemValid(slot, stack)) {
+        return if (direction != ItemTransferDirection.Push || !isItemValid(slot, stack)) {
             stack
         } else {
             if (!simulate) {
@@ -43,7 +47,7 @@ class BlockEntityNode(pPos: BlockPos, pBlockState: BlockState) : BlockEntity(
     }
 
     override fun extractItem(slot: Int, amount: Int, simulate: Boolean): ItemStack {
-        return if (items[slot].isEmpty) {
+        return if (direction != ItemTransferDirection.Pull || items[slot].isEmpty) {
             ItemStack.EMPTY
         } else {
             if (!simulate) {
