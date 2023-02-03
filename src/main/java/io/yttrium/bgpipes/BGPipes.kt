@@ -17,6 +17,8 @@ import io.yttrium.bgpipes.block.edge.BlockItemEdge
 import io.yttrium.bgpipes.block.node.BlockEntityNode
 import io.yttrium.bgpipes.block.node.BlockItemNode
 import io.yttrium.bgpipes.block.node.BlockNode
+import io.yttrium.bgpipes.gui.node.MenuNode
+import net.minecraft.world.inventory.MenuType
 import net.minecraft.world.item.CreativeModeTabs
 import net.minecraft.world.item.Item
 import net.minecraft.world.level.block.Block
@@ -42,6 +44,10 @@ class BGPipes {
         Node, Edge,
     }
 
+    enum class MenuTypes {
+        Node,
+    }
+
     enum class ItemTypes {
         Node, Edge,
     }
@@ -53,25 +59,32 @@ class BGPipes {
 
         private val BlockRegistry: DeferredRegister<Block> = DeferredRegister.create(ForgeRegistries.BLOCKS, ModID)
         val Blocks: Map<BlockTypes, RegistryObject<Block>> = mapOf(
-            BlockTypes.Node to BlockRegistry.register("node", ::BlockNode),
-            BlockTypes.Edge to BlockRegistry.register("pipe", ::BlockEdge),
+            BlockTypes.Node to BlockRegistry.register("block_node", ::BlockNode),
+            BlockTypes.Edge to BlockRegistry.register("block_pipe", ::BlockEdge),
         )
 
         private val BlockEntityRegistry: DeferredRegister<BlockEntityType<*>> =
             DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, ModID)
         val BlockEntities = mapOf(
-            BlockEntityTypes.Node to BlockEntityRegistry.register("node") {
+            BlockEntityTypes.Node to BlockEntityRegistry.register("blockentity_node") {
                 BlockEntityType.Builder.of(::BlockEntityNode, BlockNode()).build(null)
             },
-            BlockEntityTypes.Edge to BlockEntityRegistry.register("pipe") {
+            BlockEntityTypes.Edge to BlockEntityRegistry.register("blockentity_pipe") {
                 BlockEntityType.Builder.of(::BlockEntityEdge, BlockEdge()).build(null)
             },
         )
 
-        private val ItemRegistry: DeferredRegister<Item> = DeferredRegister.create(ForgeRegistries.ITEMS, ModID)
+        private val MenuRegistry: DeferredRegister<MenuType<*>> =
+            DeferredRegister.create(ForgeRegistries.MENU_TYPES, ModID)
+        val Menus = mapOf<MenuTypes, RegistryObject<MenuType<*>>>(
+            MenuTypes.Node to MenuRegistry.register("menu_node") { MenuType(::MenuNode) }
+        )
+
+        private
+        val ItemRegistry: DeferredRegister<Item> = DeferredRegister.create(ForgeRegistries.ITEMS, ModID)
         val Items: Map<ItemTypes, RegistryObject<Item>> = mapOf(
-            ItemTypes.Node to ItemRegistry.register("node", ::BlockItemNode),
-            ItemTypes.Edge to ItemRegistry.register("pipe", ::BlockItemEdge),
+            ItemTypes.Node to ItemRegistry.register("blockitem_node", ::BlockItemNode),
+            ItemTypes.Edge to ItemRegistry.register("blockitem_pipe", ::BlockItemEdge),
         )
     }
 
